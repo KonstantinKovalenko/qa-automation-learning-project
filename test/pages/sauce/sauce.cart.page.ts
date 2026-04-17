@@ -1,14 +1,22 @@
 import { $, $$, browser, expect } from '@wdio/globals'
 
 class SauceCartPg {
-    get cartItemsArray () {return $$('.cart_item')}
-    get removeItemBtnsArray () {return $$('[class ="btn btn_secondary btn_small cart_button"]')}
+    get #cartItemsArray () {return $$('.cart_item')}
 
-    async removeAllItemsFromCart(){
-        const array = await this.removeItemBtnsArray
-        for (const el of array){
-            await el.click()
+    get #checkoutBtn () {return $('#checkout')}
+
+    async clickOnCheckoutBtn (){
+        await this.#checkoutBtn.click()
+    }
+
+    /** Should check if cart is empty */
+    async isCartEmpty(){
+        const itemsArray = await this.#cartItemsArray
+        const arrayLength = await itemsArray.length
+         if(arrayLength === 0){
+            return true
         }
+        return false
     }
 }
 export default new SauceCartPg()

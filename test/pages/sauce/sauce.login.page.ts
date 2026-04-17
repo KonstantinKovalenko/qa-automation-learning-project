@@ -10,6 +10,7 @@ class SauceLoginPg {
     /**opens https://www.saucedemo.com/ */
     async openLoginPage (){
         await browser.url(this.#LOGIN_URL)
+        await expect(this.#usernameInput).toBeDisplayed()
     }
 
     /**
@@ -20,8 +21,6 @@ class SauceLoginPg {
         await this.#usernameInput.setValue(username)
         await this.#passwordInput.setValue(password)
         await this.#loginBtn.click()
-
-        await expect($('.inventory_container')).toBeDisplayed()
     }
 }
 export default new SauceLoginPg()
