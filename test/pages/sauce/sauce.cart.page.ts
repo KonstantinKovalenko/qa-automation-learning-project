@@ -9,14 +9,12 @@ class SauceCartPg {
         await this.#checkoutBtn.click()
     }
 
-    /** Should check if cart is empty */
-    async isCartEmpty(){
-        const itemsArray = await this.#cartItemsArray
-        const arrayLength = await itemsArray.length
-         if(arrayLength === 0){
-            return true
-        }
-        return false
+    async assertCartIsNotEmpty(){
+        expect(await this.#cartItemsArray.length).toBeGreaterThan(0)
+    }
+
+    async assertCartIsFull (expected: number){
+        expect(await this.#cartItemsArray.length).toBe(expected)
     }
 }
 export default new SauceCartPg()

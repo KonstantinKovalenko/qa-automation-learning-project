@@ -11,8 +11,7 @@ class SauceCheckoutPg {
     get #congratsHeader () {return $('#checkout_complete_container h2')}
     get #errorMessage () {return $('[class="error-message-container error"]')}
 
-    /** fill personal info by params */
-    async fillPersonalInfo (firstname: string, lastname: string, postalcode: number){
+    async fillPersonalInfo (firstname: string, lastname: string, postalcode: string){
         await this.#firstname.setValue(firstname)
         await this.#lastname.setValue(lastname)
         await this.#postalCode.setValue(postalcode)
@@ -26,23 +25,12 @@ class SauceCheckoutPg {
         await this.#finishBtn.click()
     }
 
-    /** Check if checkout is complete */
-    async isCheckoutComplete(){
-        const expectedText = await this.#congratsHeader.getText()
-        const realText = "Thank you for your order!"
-        if(realText === expectedText){
-            return true
-        }
-        return false
+    async assertCheckoutComplete(){
+        await expect(this.#congratsHeader).toHaveText('Thank you for your order!')
     }
 
-    /** Check if error message is shown*/
-    async isErrorShown(){
-        const errorIsExisting = await this.#errorMessage.isExisting()
-        if(errorIsExisting){
-            return true
-        }
-        return false
+    async assertErrorShown(){
+        await expect(this.#errorMessage).toExist()
     }
 }
 export default new SauceCheckoutPg()

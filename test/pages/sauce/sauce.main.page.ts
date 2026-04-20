@@ -4,13 +4,15 @@ class SauceMainPg {
     get #itemsPricesArray () {return $$('.inventory_item_price')} 
     get #sortOptionsArray () {return $$('.product_sort_container option')}
     get #addToCartBtnsArray () {return $$('[class="btn btn_primary btn_small btn_inventory "]')}
+    get #itemsCountArray () {return $$('.inventory_item')}
 
     get #cartLink () {return $('.shopping_cart_link')}
     get #cartBadge () {return $('.shopping_cart_badge')}
+    get #itemList () {return $('.inventory_list')}
 
-    /** Sort elements by 1-based index, 0 < index < 5 */
-    async sortItemsByPosition (index: number){
-        const optionsArray = this.#sortOptionsArray
+    /** Sort elements by 1-based index */
+    async selectSortOptionByIndex (index: number){
+        const optionsArray = await this.#sortOptionsArray
         const maxIndex = await optionsArray.length
         if(index < 1 || index > maxIndex){
             throw new Error (`sortItemsByPosition: index must be between 1 and ${maxIndex} inclusive, got ${index}`)
@@ -18,17 +20,11 @@ class SauceMainPg {
         return optionsArray[index-1].click()
     }
 
-    /** Check if items sorted by prise from low to high, return boolean */
-    async areItemsSortedByPriceLTH (){
+    async assertSortedByPriceLowToHigh (){
         const pricesFloatArray = await this.#getFloatPricesArray()
-        for(let i = 0; i < pricesFloatArray.length; i++){
-            if(i != 0){
-                  if(pricesFloatArray[i] < pricesFloatArray[i-1]){
-                    return false
-                }
-            }
+        for(let i = 1; i < pricesFloatArray.length; i++){
+            expect(pricesFloatArray[i]).toBeGreaterThanOrEqual(pricesFloatArray[i-1])
         }
-        return true
     }
 
     async #getFloatPricesArray (){
@@ -45,36 +41,54 @@ class SauceMainPg {
         return resultArray
     }
 
-    /** add one randomly picked item to cart */
-    async addOneRandomItemToCart (){
+    async addAllItemsToCart () {
+        const addBtnsArray = await this.#addToCartBtnsArray
+        const checkNull = await addBtnsArray.length
+        if (checkNull === 0){
+            throw new Error ('No buttons found or page was not loaded')
+        }
+        for (const el of addBtnsArray){
+            await el.click()
+        }
+    }
+
+    async addRandomItemToCart (){
         const btnsArray = await this.#addToCartBtnsArray
         const btnsAmount = await btnsArray.length
-        if(!this.#isEmpty(btnsAmount)){
-            const randomIndex = this.#getFlakyRandom(btnsAmount)
-            btnsArray[randomIndex].click()
+        if(btnsAmount != 0){
+            const randomIndex = this.#getRandomIndex(btnsAmount)
+            await btnsArray[randomIndex].click()
         }
         
     }
 
-    #getFlakyRandom (max: number){
-        return Math.floor(Math.random() * max)
+    #getRandomIndex (max: number){
+        const seed = process.env.SEED ? Number(process.env.SEED) : Date.now()
+        console.log("Seed: ", seed)
+        const x = Math.sin(seed)*10000
+        return Math.floor((x - Math.floor(x)) * max)
     }
 
-    #isEmpty (value: number){
-        if(value === 0){
-            throw new Error ('No items found or page was not loaded')
-        }
-        return false
-    }
+    async assertCartIsNotEmpty (){
+        await expect(this.#cartBadge).toExist()
+     }
 
-    /**open cart page*/
+
     async openCart (){
         await this.#cartLink.click()
     }
 
-    /** Should wait 2000 or untill Dom is loaded */
-    async waitUntilDomIsLoaded(){
-        await browser.waitUntil(async () => {return (await this.#cartBadge).isDisplayed()},{timeout: 2000, timeoutMsg: "DOM was not loaded"})
+    async waitForInventoryPageLoaded(){
+        await browser.waitUntil(async () => {return (await this.#itemList).isDisplayed()},{timeout: 2000, timeoutMsg: "DOM was not loaded"})
+    }
+
+    async assertMainPgOpened (){
+        await expect(this.#itemList).toBeDisplayed()
+    }
+
+    async getAvailableItemsCount () {
+        const itemsCount = await this.#itemsCountArray.length
+        return itemsCount
     }
 }
 export default new SauceMainPg()

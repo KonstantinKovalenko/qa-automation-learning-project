@@ -8,53 +8,57 @@ describe('ChatGPT generated middle level tests for knowledge consolidation', () 
     const username = "standard_user"
     const password = "secret_sauce"
 
-    xit('Should sort items (task 1)', async () => {
+    beforeEach(async () => {
         await SauceLoginPg.openLoginPage()
         await SauceLoginPg.loginByCredentials(username, password)
-
-        await SauceMainPg.sortItemsByPosition(3)
-        expect(await SauceMainPg.areItemsSortedByPriceLTH()).toBe(true)
+        await SauceMainPg.assertMainPgOpened()
     })
 
-    xit('Should test checkout (task 2, smoke)', async () => {
-        await SauceLoginPg.openLoginPage()
-        await SauceLoginPg.loginByCredentials(username, password)
+    it('Should sort items (task 1)', async () => {
+        await SauceMainPg.selectSortOptionByIndex(3)
+        await SauceMainPg.assertSortedByPriceLowToHigh()
+    })
 
-        await SauceMainPg.addOneRandomItemToCart()
+    it('Should test checkout (task 2, smoke)', async () => {
+        await SauceMainPg.addRandomItemToCart()
         await SauceMainPg.openCart()
 
         await SauceCartPage.clickOnCheckoutBtn()
 
-        await SauceCheckoutPage.fillPersonalInfo("name","last name", 50000)
+        await SauceCheckoutPage.fillPersonalInfo("name","last name", "50000")
         await SauceCheckoutPage.clickOnContinueBtn()
         await SauceCheckoutPage.clickOnFinishBtn()
 
-        expect(await SauceCheckoutPage.isCheckoutComplete()).toBe(true)
+        await SauceCheckoutPage.assertCheckoutComplete()
     })
 
-    xit('Should test cart condition after refresh (task 3)', async () => {
-        await SauceLoginPg.openLoginPage()
-        await SauceLoginPg.loginByCredentials(username, password)
-
-        await SauceMainPg.addOneRandomItemToCart()
+    it('Should test cart condition after refresh (task 3)', async () => {
+        await SauceMainPg.addRandomItemToCart()
 
         await browser.refresh()
-        await SauceMainPg.waitUntilDomIsLoaded()
+        await SauceMainPg.waitForInventoryPageLoaded()
 
         await SauceMainPg.openCart()
-        expect(await SauceCartPage.isCartEmpty()).toBe(false)
+        await SauceCartPage.assertCartIsNotEmpty()
     })
 
     it('Should validate personal info data (task 4, negative)', async () => {
-        await SauceLoginPg.openLoginPage()
-        await SauceLoginPg.loginByCredentials(username, password)
-
-        await SauceMainPg.addOneRandomItemToCart()
+        await SauceMainPg.addRandomItemToCart()
         await SauceMainPg.openCart()
         await SauceCartPage.clickOnCheckoutBtn()
 
         await SauceCheckoutPage.clickOnContinueBtn()
-        expect(await SauceCheckoutPage.isErrorShown()).toBe(true)
+        await SauceCheckoutPage.assertErrorShown()
+    })
+
+    it('Should validate personal info data (task 5)', async () => {
+        const expectedCount = await SauceMainPg.getAvailableItemsCount()
+        await SauceMainPg.addAllItemsToCart()
+        
+        await SauceMainPg.assertCartIsNotEmpty()
+        
+        await SauceMainPg.openCart()
+        await SauceCartPage.assertCartIsFull(expectedCount)
     })
 })
 
