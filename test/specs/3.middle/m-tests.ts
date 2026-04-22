@@ -1,8 +1,10 @@
 import { browser, expect } from '@wdio/globals'
+import { getRandomIndex } from '../../utils/random'
 import SauceLoginPg from "../../pages/sauce/sauce.login.page"
 import SauceMainPg from "../../pages/sauce/sauce.main.page"
 import SauceCartPage from '../../pages/sauce/sauce.cart.page'
 import SauceCheckoutPage from '../../pages/sauce/sauce.checkout.page'
+import { extractNumbersFromElements } from '../../utils/parse'
 
 describe('ChatGPT generated middle level tests for knowledge consolidation', () => {
     const username = "standard_user"
@@ -16,11 +18,16 @@ describe('ChatGPT generated middle level tests for knowledge consolidation', () 
 
     it('Should sort items (task 1)', async () => {
         await SauceMainPg.selectSortOptionByIndex(3)
-        await SauceMainPg.assertSortedByPriceLowToHigh()
+
+        const elementsArray = await SauceMainPg.getItemPricesArray()
+        const pricesArray = await extractNumbersFromElements(elementsArray)
+        expect(await SauceMainPg.isSortedLowToHigh(pricesArray)).toBe(true)
     })
 
     it('Should test checkout (task 2, smoke)', async () => {
-        await SauceMainPg.addRandomItemToCart()
+        const itemsCount = await SauceMainPg.getAvailableItemsCount()
+        const randomItemIndex = getRandomIndex(itemsCount)
+        await SauceMainPg.addItemByIndex(randomItemIndex)
         await SauceMainPg.openCart()
 
         await SauceCartPage.clickOnCheckoutBtn()
@@ -33,7 +40,9 @@ describe('ChatGPT generated middle level tests for knowledge consolidation', () 
     })
 
     it('Should test cart condition after refresh (task 3)', async () => {
-        await SauceMainPg.addRandomItemToCart()
+        const itemsCount = await SauceMainPg.getAvailableItemsCount()
+        const randomItemIndex = getRandomIndex(itemsCount)
+        await SauceMainPg.addItemByIndex(randomItemIndex)
 
         await browser.refresh()
         await SauceMainPg.waitForInventoryPageLoaded()
@@ -43,7 +52,10 @@ describe('ChatGPT generated middle level tests for knowledge consolidation', () 
     })
 
     it('Should validate personal info data (task 4, negative)', async () => {
-        await SauceMainPg.addRandomItemToCart()
+        const itemsCount = await SauceMainPg.getAvailableItemsCount()
+        const randomItemIndex = getRandomIndex(itemsCount)
+        await SauceMainPg.addItemByIndex(randomItemIndex)
+
         await SauceMainPg.openCart()
         await SauceCartPage.clickOnCheckoutBtn()
 

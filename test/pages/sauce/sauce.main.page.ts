@@ -15,30 +15,22 @@ class SauceMainPg {
         const optionsArray = await this.#sortOptionsArray
         const maxIndex = await optionsArray.length
         if(index < 1 || index > maxIndex){
-            throw new Error (`sortItemsByPosition: index must be between 1 and ${maxIndex} inclusive, got ${index}`)
+            throw new Error (`selectSortOptionByIndex: index must be between 1 and ${maxIndex} inclusive, got ${index}`)
         }
         return optionsArray[index-1].click()
     }
 
-    async assertSortedByPriceLowToHigh (){
-        const pricesFloatArray = await this.#getFloatPricesArray()
-        for(let i = 1; i < pricesFloatArray.length; i++){
-            expect(pricesFloatArray[i]).toBeGreaterThanOrEqual(pricesFloatArray[i-1])
+    async isSortedLowToHigh (array: number[]){
+        for(let i = 1; i < array.length; i++){
+            if(array[i] < array[i-1]){
+                return false
+            }
         }
+        return true
     }
 
-    async #getFloatPricesArray (){
-        const pricesArray = await this.#itemsPricesArray
-        const resultArray = []
-        for(const el of pricesArray){
-            const priceText = await el.getText()
-            const checkPrice = priceText.match(/\d+(\.\d+)?/)
-            if(!checkPrice){
-                throw new Error (`No price found in ${priceText}`)
-            }
-            resultArray.push(parseFloat(checkPrice[0]))
-        }
-        return resultArray
+    async getItemPricesArray () {
+        return await this.#itemsPricesArray
     }
 
     async addAllItemsToCart () {
@@ -52,27 +44,17 @@ class SauceMainPg {
         }
     }
 
-    async addRandomItemToCart (){
+    async addItemByIndex (index: number){
         const btnsArray = await this.#addToCartBtnsArray
         const btnsAmount = await btnsArray.length
         if(btnsAmount != 0){
-            const randomIndex = this.#getRandomIndex(btnsAmount)
-            await btnsArray[randomIndex].click()
+            await btnsArray[index].click()
         }
-        
-    }
-
-    #getRandomIndex (max: number){
-        const seed = process.env.SEED ? Number(process.env.SEED) : Date.now()
-        console.log("Seed: ", seed)
-        const x = Math.sin(seed)*10000
-        return Math.floor((x - Math.floor(x)) * max)
     }
 
     async assertCartIsNotEmpty (){
         await expect(this.#cartBadge).toExist()
      }
-
 
     async openCart (){
         await this.#cartLink.click()
