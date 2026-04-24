@@ -22,11 +22,12 @@ export const config = {
     //
     specs: [
         './test/specs/3.middle/m-tests.ts'
+        /* '/test/specs/2.junior/j-tests.js',
+         '/test/specs/1.trainee/t-tests.js' */
     ],
     // Patterns to exclude.
     exclude: [
-         /* '/test/specs/2.junior/j-tests.js',
-         '/test/specs/3.middle/m-tests.js' */
+         
     ],
     //
     // ============
