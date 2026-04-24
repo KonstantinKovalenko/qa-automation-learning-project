@@ -1,4 +1,4 @@
-# WebdriverIO Test Automation Learning Project (SauceDemo)
+# UI Automation Framework using WebdriverIO & TypeScript (SauceDemo)
 
 ## About the Project  
 This project is a structured self-learning journey in QA Automation using WebdriverIO and TypeScript.  
@@ -40,7 +40,6 @@ utils/          - data processing & helper functions
 
   npm test 
  ```
-
 ---
 
 ## Test Coverage
@@ -58,7 +57,6 @@ utils/          - data processing & helper functions
 - Controlled randomness via seeded functions  
 - TypeScript usage in test automation  
 - Clean and readable test design  
-
 ---
 
 ## Author
